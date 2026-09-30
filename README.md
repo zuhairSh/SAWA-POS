@@ -1153,7 +1153,7 @@ RefundTracking
 
 ![SAWA POS Database Schema](SawaPOS_Schema.drawio.png)
 
-📥 [عرض ملف ERD بصيغة PDF](SawaPOS_Schema.drawio.pdf)
+📥 [عرض ملف ERD بصيغة PDF](SawaPOS_Schema.pdf)
 
 🔗 [مستودع تصميم قاعدة البيانات](https://github.com/zuhairSh/SAWA-POS-Database-Design)
 
