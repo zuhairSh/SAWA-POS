@@ -1,1020 +1,1394 @@
-# SAWA POS
+# 🧾 SAWA POS
+## Point of Sale & Restaurant/Cafe Operations Management System
 
-نظام نقاط بيع وإدارة (Point of Sale & Management System) مخصص للمطاعم والمقاهي، مبني من الصفر لتغطية دورة التشغيل اليومية الكاملة للمنشأة: من إدارة المستخدمين والمنتجات والإعدادات، مرورًا بإنشاء الطلبات والدفع وإدارة الورديات والمصروفات والمرتجعات، وانتهاءً بالتقارير ولوحة التحكم الإدارية.
-
-النظام غير مصمم كشاشة كاشير بسيطة لإدخال منتج وحساب سعر، بل كدورة تشغيل مترابطة تربط كل عملية بيع بالوردية التي حدثت خلالها، وبالمستخدم الذي نفّذها، وبالحسابات والتقارير الناتجة عنها.
-
----
-
-## جدول المحتويات
-1. [التقنيات المستخدمة](#التقنيات-المستخدمة)
-2. [المعمارية البرمجية (3-Tier Architecture)](#المعمارية-البرمجية-3-tier-architecture)
-3. [لقطات من الواجهة (UI Showcase)](#لقطات-من-الواجهة-ui-showcase)
-4. [شرح مرئي كامل للنظام](#شرح-مرئي-كامل-للنظام)
-5. [تسجيل الدخول والمستخدمون](#تسجيل-الدخول-والمستخدمون)
-6. [الأدوار والصلاحيات (Roles & Permissions)](#الأدوار-والصلاحيات-roles--permissions)
-7. [إدارة الفئات والمنتجات](#إدارة-الفئات-والمنتجات)
-8. [الأحجام (Variants/Sizes)](#الأحجام-variantssizes)
-9. [دورة حياة الطلب (Order Lifecycle)](#دورة-حياة-الطلب-order-lifecycle)
-10. [شاشة نقاط البيع (POS)](#شاشة-نقاط-البيع-pos)
-11. [الدفع (Payment)](#الدفع-payment)
-12. [الخصومات والضرائب](#الخصومات-والضرائب)
-13. [الفواتير والطباعة](#الفواتير-والطباعة)
-14. [المرتجعات (Refunds)](#المرتجعات-refunds)
-15. [دورة حياة الوردية (Shift Lifecycle)](#دورة-حياة-الوردية-shift-lifecycle)
-16. [إدارة المستخدمين (شاشة Users)](#إدارة-المستخدمين-شاشة-users)
-17. [لوحة التحكم (Dashboard)](#لوحة-التحكم-dashboard)
-18. [التقارير (Reports)](#التقارير-reports)
-19. [الإعدادات (Settings)](#الإعدادات-settings)
-20. [تصميم قاعدة البيانات](#تصميم-قاعدة-البيانات)
-21. [مخطط قاعدة البيانات (ERD)](#مخطط-قاعدة-البيانات-erd)
-22. [سلامة البيانات والمعاملات (Data Integrity & Transactions)](#سلامة-البيانات-والمعاملات-data-integrity--transactions)
-23. [معالجة الأخطاء](#معالجة-الأخطاء)
-24. [التثبيت والنشر (Deployment)](#التثبيت-والنشر-deployment)
-25. [دورة حياة النظام الكاملة](#دورة-حياة-النظام-الكاملة)
----
-
-## التقنيات المستخدمة
-
-- **C#**
-- **.NET / Windows Forms**
-- **SQL Server**
-- **ADO.NET**
-- **T-SQL**
-- **3-Tier Architecture**
-- **Object-Oriented Programming (OOP)**
-- **Visual Studio**
-- **Git / GitHub**
-- **Draw.io** — لتصميم مخططات قاعدة البيانات
-- **Inno Setup** — لبناء حزمة التثبيت
-
-قاعدة البيانات علائقية (Relational Database)، مع فصل واضح بين طبقة الوصول إلى البيانات (Data Access Layer)، وطبقة معالجة منطق العمل (Business Layer)، وطبقة واجهات المستخدم (Presentation Layer).
+> **SAWA POS** هو نظام نقاط بيع وإدارة تشغيل لبيئات المطاعم والمقاهي، مبني كتطبيق Windows Desktop باستخدام C# و.NET Windows Forms وSQL Server، ويغطي دورة التشغيل اليومية من تسجيل الدخول وفتح الوردية، مرورًا بالبيع والدفع والخصومات والضرائب والمصروفات والمرتجعات، وانتهاءً بإغلاق الوردية والتقارير ولوحة التحكم.
 
 ---
 
-## المعمارية البرمجية (3-Tier Architecture)
+## 📌 نظرة عامة
 
-النظام مبني على معمارية ثلاثية الطبقات:
+SAWA POS ليس مجرد شاشة كاشير لإدخال منتج وحساب سعر. الفكرة الأساسية في النظام هي بناء **دورة تشغيل مترابطة** بحيث ترتبط العمليات المالية والتشغيلية بالمستخدم والوردية والطلب وطريقة الدفع.
 
-```
-Presentation Layer
-        │
-        ↓
-Business Layer
-        │
-        ↓
-Data Access Layer
-        │
-        ↓
-    SQL Server
-```
-
-### Presentation Layer
-
-مسؤولة عن:
-
-- الـ Forms والـ UserControls
-- إدخال البيانات وعرضها
-- التحقق الأولي من المدخلات (Input Validation الأساسي)
-- التعامل المباشر مع المستخدم وعرض الرسائل
-- التنقل بين أجزاء النظام
-
-### Business Layer
-
-مسؤولة عن:
-
-- قواعد العمل (Business Rules)
-- العمليات الحسابية (الإجماليات، الخصومات، الضرائب)
-- التحقق من صحة العمليات قبل تنفيذها
-- إدارة حالات الكيانات (مثل حالة الطلب أو الوردية)
-- تنفيذ العمليات المرتبطة بدورة العمل (Workflow)
-- ربط طبقة العرض بطبقة البيانات، بحيث لا تتعامل الواجهة مباشرة مع SQL
-
-### Data Access Layer
-
-مسؤولة عن:
-
-- الاتصال بـ SQL Server عبر `SqlConnection`
-- تنفيذ عمليات `SELECT` / `INSERT` / `UPDATE` / `DELETE` عبر `SqlCommand` و`SqlDataReader`
-- تنفيذ منطق SQL المعاملاتي (Transactional) عند الحاجة، خصوصًا في العمليات التي تمس أكثر من جدول في آن واحد
-- إرجاع النتائج إلى Business Layer بصيغة `DataTable` أو قيم مباشرة
-- التقاط أخطاء قاعدة البيانات ومعالجتها
-
----
-
-## لقطات من الواجهة (UI Showcase)
-
-| الشاشة | الواجهة |
-|---|---|
-| الشاشة الرئيسية ولوحة التحكم (Dashboard) | ![Main Dashboard](Images/Sawa_Screen%20(9).jpg) |
-| شاشة نقاط البيع (POS Screen) | ![POS Screen](Images/Sawa_Screen%20(10).png) |
-| تخصيص تفاصيل المنتج (Product Details) | ![Product Details Customization](Images/Sawa_Screen%20(11).png) |
-| ملخص المبيعات (Sales Summary) | ![Sales Summary](Images/Sawa_Screen%20(32).png) |
-| تقرير الطلبات (Orders Report) | ![Orders Report](Images/Sawa_Screen%20(1).png) |
-
-> 📁 **ملاحظة:** للاطلاع على المعرض الكامل لكافة واجهات وشاشات النظام (إدارة الورديات، المستخدمين، المصروفات، والإعدادات)، يمكنك تصفح مجلد الصور مباشرة: [`/images`](./images).
-## شرح مرئي كامل للنظام
-
----
-## 🎥 الشرح مرئي لكامل للنظام
-
-يتوفر تسجيل مرئي شامل ودقيق يستعرض النظام عملياً من الداخل، ويغطي دورة التشغيل الكاملة:
-* تسجيل الدخول وإدارة الصلاحيات.
-* فتح الوردية وإدارة النقد الافتتاحي.
-* تجربة البيع عبر شاشة الكاشير (POS)، تخصيص الأصناف، الخصومات، والتعليق.
-* طرق الدفع المختلفة (نقدي، بطاقة، دفع مجزأ).
-* تسجيل المصروفات، المرتجعات، وإغلاق الوردية ومطابقة النقدية (Blind Close).
-* استعراض لوحة التحكم (Dashboard) وتوليد التقارير وتصديرها بصيغة PDF.
-
-🔗 **[اضغط هنا لمشاهدة استعراض النظام الكامل على Google Drive ➔](https://drive.google.com/file/d/1bH1sfMtRQG6BdZno-1JVCAXDOcEUlPZo/view?usp=sharing)**
-
-## تسجيل الدخول والمستخدمون
-
-النظام يعتمد مفهوم مستخدم حقيقي مرتبط ببيانات شخص، وليس مجرد اسم كاشير يُدخل يدويًا دون هوية مرتبطة به:
-
-```
-Person
-   │
-   └── User
-          │
-          └── Role
-```
-
-**بيانات الشخص (Person):**
-
-- `PersonID`
-- `First Name`
-- `Last Name`
-- `Phone`
-- `Address`
-
-**بيانات المستخدم (User):**
-
-- `UserID`
-- `PersonID`
-- `Username`
-- `HashedPassword`
-- `RoleID`
-- `IsActive`
-- `Permissions`
-
----
-
-## الأدوار والصلاحيات (Roles & Permissions)
-
-يعتمد النظام نظام صلاحيات (Permissions) مرتبط بكل مستخدم، إلى جانب الدور (Role) الخاص به:
-
-```
-User
- │
- ├── Role
- │
- └── Permissions
-        │
-        ├── POS
-        ├── Orders
-        ├── Products
-        ├── Categories
-        ├── Expenses
-        ├── Reports
-        ├── Users
-        ├── Settings
-        ├── Shifts
-        └── Dashboard
-```
-
-قبل فتح أي شاشة أو تنفيذ أي وظيفة حساسة، يتحقق النظام من صلاحية المستخدم الحالي:
-
-```
-User clicks POS
-      ↓
-Check POS Permission
-      ↓
-Allowed?
-   ├── Yes → Continue
-   └── No  → Unauthorized Message
-```
-
----
-
-## إدارة الفئات والمنتجات
-
-### الفئات (Categories)
-
-كل منتج ينتمي إلى فئة واحدة:
-
-```
-Category
-   │
-   └── Products
-```
-
-حقول الفئة: `CategoryID`, `CategoryName`, `IsActive`. تُستخدم الفئات لتصفية المنتجات عرضًا وبحثًا.
-
-### المنتجات (Products)
-
-المنتج هو الوحدة الأساسية التي تُبنى عليها شاشة نقاط البيع، وتشمل بياناته:
-
-- `ProductID`
-- `CategoryID`
-- `ProductName`
-- `Description`
-- `Price`
-- `IsAvailable`
-- `ImagePath`
-
-الوظائف المتاحة على المنتج: إضافة، تعديل، تغيير السعر، تغيير التصنيف، تغيير حالة التوفر، إضافة صورة، وتعطيل المنتج دون حذفه.
-
----
-
-## الأحجام (Variants/Sizes)
-
-### الأحجام
-
-المنتج في سياق المطاعم قد يتوفر بأكثر من حجم (مثال: برجر بحجم صغير/متوسط/كبير). الأحجام ليست نصوصًا حرة تُكتب في كل مرة، بل كيان مستقل يُربط بالمنتج عبر علاقة تحدد الأحجام المتاحة له تحديدًا:
-
-```
-Sizes
-   │
-   ├── Small
-   ├── Medium
-   └── Large
-          │
-          ↓
-   ProductSizes
-          │
-          ↓
-      Product
-```
-
----
-
-## دورة حياة الطلب (Order Lifecycle)
-
-الطلب هو الوحدة التشغيلية المركزية في النظام. مسار الطلب الأساسي:
-
-```
-POS
- │
- ↓
-Create Order
- │
- ├── Add Product
- ├── Select Variant
- ├── Quantity
- ├── Discount
- └── Notes
- │
- ↓
-Calculate Total
- │
- ↓
-Payment
- │
- ↓
-Complete Order
-```
-
-كل طلب مرتبط بالوردية النشطة (`ShiftID`) وبالمستخدم الذي أنشأه (`CreatedByUserID`)، ويحمل الحقول: `OrderID`, `ShiftID`, `CreatedByUserID`, `SubTotal`, `Discount`, `TotalPrice`, `Status`.
-
-### أصناف الطلب (Order Items)
-
-الطلب لا يخزّن المنتجات مباشرة داخله، بل عبر جدول تفصيلي منفصل:
-
-```
-Order
- │
- └── OrderItems
-       │
-       ├── Product
-       ├── Quantity
-       ├── UnitPrice
-       ├── Discount
-       └── TotalPrice
-```
-
-هذا التصميم يسمح للطلب باحتواء عدد غير محدود من الأصناف، كما أن حفظ `UnitPrice` داخل كل صنف من صنوف الطلب (وليس الاعتماد على سعر المنتج الحالي) يحافظ على **السعر التاريخي (Historical Pricing)**: إذا تغيّر سعر المنتج لاحقًا، لا يتأثر سعر الطلبات السابقة التي بيعت بالسعر القديم.
-
-### ملاحظات الطلب
-
-يمكن إرفاق ملاحظة نصية بأي صنف داخل الطلب (مثل "بدون بصل")، وهي مختلفة جوهريًا عن الإضافة (Add-on): الإضافة كيان منظم له سعر محدد، بينما الملاحظة تعليمات نصية بحتة لا تؤثر على السعر.
-
-### حالات الطلب (Order States)
-
-```
-Order
- │
- ├── Pending / Suspended
- │
- ├── Completed
- │
- └── Cancelled
-```
-
-الطلب المعلّق (Pending) هو طلب بدأه الكاشير بإضافة أصناف إليه، لكنه لم يُستكمل بالدفع بعد.
-
-### الطلبات المعلّقة (Suspended Orders)
-
-الكاشير غير مُجبر على إنهاء الطلب فورًا، ويمكنه تعليقه والعودة إليه لاحقًا:
-
-```
-Create Order
-     ↓
-Add Items
-     ↓
-Suspend Order
-     ↓
-Continue serving other customers
-     ↓
-Resume from Orders screen
-```
-
-### شاشة الطلبات (Orders Screen)
-
-شاشة مستقلة عن POS، مخصصة لإدارة الطلبات التي تحتاج متابعة، وتوفر: عرض الطلبات والبحث فيها، استعراض التفاصيل، متابعة الطلبات المعلّقة واستكمالها، طباعة الطلب/الفاتورة حسب حالته، وإلغاء الطلب عندما تسمح حالته بذلك.
-
----
-
-## شاشة نقاط البيع (POS)
-
-الشاشة التي يستخدمها الكاشير أثناء عملية البيع الفعلية. المبدأ التصميمي المعتمد هو الوصول المباشر لإدخال الأصناف دون المرور بشاشات وسيطة:
-
-```
-Main Form
-   ↓
-POS
-   ↓
-بدء إدخال الطلب مباشرة
-```
-
-الشاشة موجّهة للاستخدام السريع، وتتعامل مع: الفئات، المنتجات، الطلب الحالي، الكمية، السعر، الخصومات، الأحجام، الإضافات، الملاحظات، الإجمالي، والدفع.
-
----
-
-## الدفع (Payment)
-
-بعد اكتمال الطلب:
-
-```
-Order
-   ↓
-Payment
-```
-
-الدفع مصمم ككيان مستقل مرتبط بالطلب، بالحقول التالية:
-
-```
-Payments
-│
-├── PaymentID
-├── OrderID
-├── PaymentMethod
-├── Amount
-├── PaidAmount
-├── ChangeAmount
-└── PaidAt
-```
-
-### الدفع النقدي (Cash)
-
-```
-Total
- ↓
-Cash Received
- ↓
-Change
- ↓
-Complete
-```
-
-يُحسب الباقي (Change) تلقائيًا بناءً على المبلغ المستلم من العميل.
-
-### الدفع بالبطاقة (Card)
-
-يُسجَّل كطريقة دفع منفصلة، دون افتراض إدخال مبلغ نقدي أو حساب باقٍ:
-
-```
-Cash → Paid Amount → Change
-Card → Card Amount
-```
-
-### الدفع المجزّأ (Split Payment)
-
-يمكن توزيع قيمة الطلب على أكثر من وسيلة دفع في نفس العملية، مثال:
-
-```
-Order Total = 10 OMR
-Cash = 4
-Card = 6
-Cash + Card = Order Total
-```
-
-ويمكن تسجيل أكثر من سجل دفع واحد لنفس الطلب.
-
----
-
-## الخصومات والضرائب
-
-### الخصم
-
-يُطبَّق الخصم على مستوى الطلب أو العنصر حسب منطق العمل المعتمد، مع إعداد يحدد الحد الأقصى المسموح به للخصم:
-
-```
-Original Price
-      ↓
-Discount
-      ↓
-Discounted Price
-      ↓
-Tax Logic
-      ↓
-Final Total
-```
-
-### الضريبة (VAT)
-
-تُدار الضريبة من الإعدادات، وتشمل: تفعيل/تعطيل الضريبة، الرقم الضريبي، نسبة الضريبة، طريقة احتسابها، عدد الخانات العشرية، والعملة.
-
-طريقة احتساب الضريبة تدعم نمطين:
-
-- **Inclusive** — السعر المعروض يشمل الضريبة ضمنيًا.
-- **Exclusive** — تُضاف الضريبة إلى السعر الأساسي.
-
----
-
-## الفواتير والطباعة
-
-بعد نجاح الدفع:
-
-```
-Order
- ↓
-Payment completed
- ↓
-Order completed
- ↓
-Receipt / Printing
- ↓
-Order becomes part of sales history
-```
-
-يمكن للطلب المكتمل بعد ذلك أن يظهر في التقارير، لوحة التحكم، عمليات الاسترجاع، وحسابات الوردية.
-
-إعدادات الفاتورة قابلة للتخصيص حسب المنشأة، وتشمل: اسم المنشأة، الشعار، رقم الهاتف، العنوان، رأس الفاتورة وتذييلها، العملة، عدد الخانات العشرية، اسم الطابعة، خيار الطباعة التلقائية، وإظهار رمز QR.
-
----
-
-## المرتجعات (Refunds)
-
-المرتجع جزء أساسي من الدورة المالية للنظام. بدلًا من حذف الطلب الأصلي، يبقى محفوظًا كما هو، وتُسجَّل عملية الإرجاع كعملية مستقلة مرتبطة به:
-
-```
-Original Order
-      │
-      ↓
-   Refund
-```
-
-### الاسترجاع الجزئي (Partial Refund)
-
-يدعم النظام إرجاع جزء فقط من الطلب مع تتبّع الكمية المرتجعة لكل صنف على حدة:
-
-```
-Order:
-Burger × 2
-Fries × 1
-
-Refund:
-Burger × 1
-```
-
-في هذا المثال لا يُلغى الطلب بالكامل، بل تُسجَّل كمية الإرجاع لعنصر Burger فقط.
-
-### الاسترجاع الكامل (Full Refund)
-
-```
-Original Order
-       ↓
-Full Refund
-       ↓
-Refunded Amount = Eligible Order Amount
-```
-
-### الأثر المالي للاسترجاع
-
-الاسترجاع يؤثر ماليًا بحسب طريقة الدفع الأصلية: إذا كان البيع نقدًا يُعكَس الأثر نقدًا، وإذا كان الدفع مجزّأً (Cash/Card) يُعالَج مبلغ الإرجاع وفق توزيع الدفع المرتبط بالعملية الأصلية.
-
-### الحفاظ على الأسعار التاريخية
-
-من قرارات التصميم الجوهرية أن الطلب يحتفظ بالسعر الذي بيع به وقت إتمامه، بصرف النظر عن أي تغيير لاحق في سعر المنتج:
-
-```
-Product price at sale time = 2.000
-[Order completed]
-Product price later changes = 2.500
-Order.UnitPrice remains = 2.000
-```
-
----
-
-## دورة حياة الوردية (Shift Lifecycle)
-
-الوردية هي الوحدة الأساسية للرقابة النقدية في النظام:
-
-```
-Open Shift
-    ↓
-Orders
-    ↓
-Payments
-    ↓
-Expenses
-    ↓
-Refunds
-    ↓
-Close Shift
-```
-
-### فتح الوردية
-
-```
-Cashier
-   ↓
-Opening Cash
-   ↓
-Open Shift
-```
-
-يُسجَّل عند الفتح: `ShiftID`, `OpenedByUser`, `OpenedAt`, `OpeningCash`, `Status`. لا يُسمح بوجود أكثر من وردية نشطة في نفس الوقت وفق منطق النظام.
-
-### علاقة الطلب بالوردية
-
-```
-Shift
- │
- ├── Order
- ├── Order
- ├── Order
- └── ...
-```
-
-هذا الربط يسمح بمعرفة كل ما حدث ماليًا خلال وردية محددة.
-
-### المصروفات وعلاقتها بالوردية
-
-المصروف يحمل الحقول: `ExpenseID`, `CreatedByUserID`, `ShiftID`, `Amount`, `Reason`, `CreatedAt`, `Description`، ويرتبط بالوردية التي سُجّل خلالها:
-
-```
-Shift
- │
- └── Expenses
-```
-
-المصروف النقدي المسجَّل خلال الوردية يؤثر مباشرة على حساب النقد المتوقع عند إغلاقها.
-
-### إغلاق الوردية وحساب النقد
-
-عند الإغلاق، يُحسب النقد المتوقع كالتالي:
-
-```
-Opening Cash
-+ Cash Sales
-- Cash Refunds
-- Cash Expenses
-= Expected Cash
-```
-
-ثم يُدخل الكاشير `Actual Cash`، ويُحسب الفرق:
-
-```
-Difference = Actual Cash - Expected Cash
-```
-
-- إذا كانت `Difference = 0` → لا يوجد فرق.
-- إذا كانت `Difference < 0` → عجز (Shortage) في الصندوق.
-- إذا كانت `Difference > 0` → زيادة (Overage) في الصندوق.
-
-هذا يتيح للمدير معرفة أي انحراف في الصندوق فور إغلاق الوردية.
-
-### تعديل النقد الافتتاحي (Opening Cash Correction)
-
-يمكن تعديل قيمة `Opening Cash` أثناء الوردية ضمن الصلاحيات والقواعد المحددة، لكن التعديل لا يُنفَّذ كتغيير صامت، بل يُسجَّل ضمن سجل تدقيقي:
-
-```
-Opening Cash
-      ↓
-Correction
-      ↓
-Audit Trail
-```
-
----
-
-## إدارة المستخدمين (شاشة Users)
-
-من شاشة المستخدمين، يستطيع المسؤول (حسب صلاحياته):
-
-- عرض قائمة المستخدمين والبحث فيها
-- إضافة مستخدم جديد
-- تعديل بيانات مستخدم
-- تفعيل أو تعطيل حساب مستخدم
-- تحديد الدور (Role) الخاص به
-- تحديد الصلاحيات (Permissions) الممنوحة له
-- إدارة بيانات الشخص (Person) المرتبطة بالمستخدم
-
----
-
-## لوحة التحكم (Dashboard)
-
-لوحة التحكم هي الواجهة الإدارية السريعة للمدير، وتتكوّن من:
-
-```
-Dashboard
-│
-├── KPIs
-├── Current Shift
-├── Alerts
-├── Sales Charts
-├── Category Analysis
-├── Top Products
-└── Quick Actions
-```
-
-### مؤشرات الأداء (KPIs)
-
-تشمل: إجمالي المبيعات (Gross Sales)، صافي المبيعات (Net Sales)، إجمالي الطلبات، متوسط قيمة الطلب، إجمالي المرتجعات، إجمالي المُحصَّل، وإجمالي الضريبة. تُنسَّق كل المبالغ حسب إعدادات العملة وعدد الخانات العشرية المحددة في النظام.
-
-### معلومات الوردية الحالية
-
-تعرض اللوحة بيانات الوردية الجارية مباشرة: رقم الوردية، الكاشير، النقد الافتتاحي، المبيعات، المرتجعات، المصروفات، النقد المتوقع، والطلبات المعلّقة.
-
-### التنبيهات (Alerts)
-
-قسم مخصص للحركات الاستثنائية مثل الاسترجاع، المصروف، أو الخصم، ويعرض لكل تنبيه: نوعه، عنوانه، وقته، والمستخدم الذي أنشأ العملية المرتبطة به.
-
-### الرسوم البيانية
-
-تشمل: المبيعات حسب الساعة (Hourly Sales)، المبيعات حسب الفئة (Category Sales)، والمنتجات الأكثر مبيعًا (Top Products)، مع إمكانية اختيار الفترة الزمنية.
-
-### التصفية الزمنية (Filtering)
-
-```
-Today
-This Week
-This Month
-Custom
-      ↓
-Date Range
-    ↓
-Dashboard Queries
-    ↓
-KPIs + Charts + Analysis
-```
-
-### إجراءات سريعة (Quick Actions)
-
-تتيح اللوحة الانتقال المباشر إلى POS، الطلبات، التقارير، أو الوردية الحالية، مع التحقق من صلاحية المستخدم قبل فتح أي شاشة.
-
----
-
-## التقارير (Reports)
-
-التقارير تمثل طبقة الإدارة والتحليل التاريخي، وتتيح للمدير الوصول إلى تفاصيل لا تعرضها لوحة التحكم مباشرة. التقارير المتوفرة في النظام:
-
-- **Sales Report** — المبيعات خلال فترة محددة: الفترة، إجمالي المبيعات، عدد الطلبات، المبيعات النقدية، مبيعات البطاقة، الخصومات، والضريبة، مع جدول تفصيلي حسب التاريخ.
-- **Product Sales Report** — تحليل المنتجات: الكمية المباعة، الإيراد، ونسبة كل منتج من إجمالي المبيعات.
-- **Payment Report** — تحليل حسب وسيلة الدفع (نقدًا/بطاقة) وإجمالي المُحصَّل خلال الفترة.
-- **Shift Report** — أداء كل وردية: الكاشير، النقد الافتتاحي، المبيعات، المصروفات، المرتجعات، النقد المتوقع والفعلي، والفرق بينهما.
-- **Expense Report** — المصروفات خلال فترة: الإجمالي، الفئات، المبلغ، التاريخ، المستخدم، والوردية المرتبطة.
-- **Refund Report** — عمليات الإرجاع: الطلب الأصلي، مبلغ الإرجاع، وقته، المستخدم، والمنتجات والكميات المرتجعة.
-- **Orders Report** — تحليل الطلبات حسب التاريخ، الحالة، المبلغ، المستخدم، والوردية.
-
-### تصدير وإرسال التقارير
-
-صُمِّمت التقارير لتكون جاهزة للاستخدام الإداري الفعلي، لا مجرد أرقام تُعرض على الشاشة ثم تُنسى:
-
-- **PDF Export** — تصدير التقرير بصيغة PDF، جاهزًا للأرشفة أو المشاركة كما هو.
-- **Email** — إرسال التقرير مباشرة من داخل النظام عبر البريد الإلكتروني، دون الحاجة لأي خطوة وسيطة لنقله خارج التطبيق.
-
----
-
-## الإعدادات (Settings)
-
-الإعدادات هي نقطة التحكم المركزية بخصائص المنشأة والنظام، وتُقسَّم منطقيًا إلى:
-
-```
-Settings
-│
-├── Business Information
-├── Financial & Tax
-├── Printing
-├── QR
-└── System
-```
-
-### معلومات المنشأة (Business Information)
-
-اسم المنشأة، الشعار، الهاتف، العنوان، رأس الفاتورة وتذييلها.
-
-### الإعدادات المالية والضريبية (Financial & Tax)
-
-العملة، عدد الخانات العشرية، تفعيل الضريبة، الرقم الضريبي، نسبة الضريبة، طريقة احتساب الضريبة، والحد الأقصى المسموح للخصم.
-
-### إعدادات الطباعة (Printing Settings)
-
-اسم الطابعة، الطباعة التلقائية للفاتورة، وإظهار رمز QR.
-
-### إعدادات النظام (System Settings)
-
-اللغة، وخيار **Blind Close** — آلية تجعل الكاشير يُدخل قيمة النقد الفعلي (Actual Cash) دون إظهار النقد المتوقع (Expected Cash) له مسبقًا عند تفعيلها، لضمان دقة أعلى في عملية الجرد.
-
-### العملة والدقة العشرية
-
-تُستخدم إعدادات `Currency` و`DecimalPlaces` في تنسيق جميع المبالغ المعروضة في النظام (بما فيها لوحة التحكم)، بحيث لا تعتمد أي شاشة على قيمة ثابتة لعدد الخانات العشرية، بل تُنسَّق القيم بناءً على إعدادات المنشأة.
-
----
-
-## تصميم قاعدة البيانات
-
-قاعدة البيانات مصممة حول الكيانات الرئيسية للنظام:
-
-```
-People
-Users
-Roles
-Categories
-Products
-Shifts
-Orders
-OrderItems
-Payments
-Expenses
-Audit Logs
-System Settings
-```
-
-### العلاقات الأساسية
-
-```
-People
-   │
-   └── Users
-          │
-          └── Roles
-
-Categories
-   │
-   └── Products
-
-Users
-   │
-   ├── Shifts
-   ├── Orders
-   └── Expenses
-
-Shifts
-   │
-   ├── Orders
-   └── Expenses
-
-Orders
-   │
-   ├── OrderItems
-   └── Payments
-```
-
----
-## 🔗 مخطط قاعدة البيانات (ERD)
-
-تم توثيق هندسة قاعدة البيانات (ERD) بشكل منفصل ومفصل، بما يشمل المخطط عالي الدقة (بصيغتي PDF و PNG) والتفاصيل الهندسية للجداول والعلاقات والقيود. يمكنك الاطلاع عليها في المستودع المخصص عبر الرابط التالي:
-
-🔗 **[اضغط هنا لعرض تفاصيل ومخطط قاعدة البيانات (ERD) ➔](https://github.com/zuhairSh/SAWA-POS-Database-Design)** 
----
-
-## سلامة البيانات والمعاملات (Data Integrity & Transactions)
-
-من الجوانب التقنية الأساسية في تصميم النظام:
-
-- **Parameterized SQL** — جميع الاستعلامات تُنفَّذ عبر معاملات (Parameters) وليس دمج القيم مباشرة في نص الاستعلام.
-- **Transactions** — العمليات المالية متعددة الجداول تُنفَّذ ضمن معاملة واحدة.
-- **Historical Prices** — حفظ سعر البيع وقت إتمام الطلب بمعزل عن سعر المنتج الحالي.
-- **Relationships** — علاقات مرجعية واضحة بين الكيانات (Users, Shifts, Orders, Payments...).
-- **Business Validation** — التحقق من صحة العملية في طبقة Business قبل الوصول إلى قاعدة البيانات.
-- **Audit Trail** — تسجيل العمليات الحساسة بدل تنفيذها بصمت.
-- **قيود مرتبطة بحالة الوردية** — منع بعض العمليات حسب حالة الوردية (مفتوحة/مغلقة).
-- **ربط كل عملية بالمستخدم والوردية** — لضمان إمكانية إسناد كل حركة مالية لمصدرها.
-
-### المعاملات (Transactions)
-
-العمليات المالية الحساسة لا تُنفَّذ كخطوات مستقلة يمكن أن ينجح بعضها ويفشل بعضها الآخر، بل كوحدة واحدة ذرية (Atomic):
-
-```
-Begin Transaction
-      │
-      ├── Operation 1
-      ├── Operation 2
-      ├── Operation 3
-      │
-      ↓
-   Commit
-```
-
-وفي حال فشل أي خطوة:
-
-```
-Failure
-   ↓
-Rollback
-```
-
-هذا النمط مطبَّق تحديدًا على: إنشاء الطلب مع أصنافه، عمليات الدفع، عمليات الاسترجاع، وأي عملية تؤثر على أكثر من جدول في آن واحد.
-
----
-
-## معالجة الأخطاء
-
-طبقة الوصول إلى البيانات (Data Access Layer) تعتمد نمط `try/catch` حول كل عملية اتصال بقاعدة البيانات، مع تسجيل أي استثناء يحدث عبر آلية تسجيل مركزية (`LogError`) بدل السماح للخطأ بالمرور بصمت أو التسبب في توقف غير متحكم به للتطبيق.
-
----
-
-## التثبيت والنشر (Deployment)
-
-تم إعداد حزمة تثبيت باستخدام **Inno Setup** تضم:
-
-```
-Installer
-   ↓
-Application
-   +
-SQL Server Express
-   +
-Database Configuration
-```
-
-الحزمة تقوم بتثبيت التطبيق نفسه، إلى جانب SQL Server Express عند الحاجة، وإعداد قاعدة البيانات تلقائيًا دون تدخل يدوي من المستخدم النهائي.
-
----
-
-## دورة حياة النظام الكاملة
-
-الصورة الكاملة لدورة تشغيل النظام من بداية اليوم إلى نهايته:
-
-```
+```text
 Login
   │
-  ↓
+  ▼
 Main Form
   │
-  ├── Manage Products
-  ├── Manage Categories
-  ├── Manage Users
-  ├── Configure Settings
+  ├── Products / Categories
+  ├── Users / Permissions
+  ├── Settings
+  └── Dashboard
   │
-  ↓
+  ▼
 Open Shift
   │
-  ↓
+  ▼
 POS
   │
-  ├── Select Category
-  ├── Select Product
-  ├── Select Size
-  ├── Select Add-ons
+  ├── Product
+  ├── Variant
   ├── Quantity
   ├── Notes
   └── Discount
   │
-  ↓
+  ▼
 Order
   │
-  ├── Suspend
-  │      ↓
-  │   Orders Screen
-  │      ↓
-  │   Resume
-  │
-  ↓
+  ▼
 Payment
   │
   ├── Cash
-  ├── Card
-  └── Split
+  ├── Visa/Card
+  └── Split Cash + Visa
   │
-  ↓
+  ▼
 Completed Order
   │
   ├── Receipt
   ├── Reports
   └── Dashboard
   │
-  ↓
-Possible Refund
-  │
-  ↓
-Shift Closing
-  │
-  ├── Sales
-  ├── Refunds
-  ├── Expenses
-  ├── Expected Cash
-  ├── Actual Cash
-  └── Difference
-  │
-  ↓
-Reports / Dashboard
+  ├── Refund
+  └── Shift Closing
+          │
+          ├── Expected Cash
+          ├── Actual Cash
+          └── Difference
 ```
 
-### دورة المال داخل النظام
+---
 
-```
-Opening Cash
-      │
-      ↓
-Cash Sales
-      │
-      ├── Cash
-      └── Card
-      │
-      ↓
-Refunds
-      │
-      ↓
-Expenses
-      │
-      ↓
-Expected Cash
-      │
-      ↓
-Actual Cash
-      │
-      ↓
-Difference
+# 📚 جدول المحتويات
+
+- [التقنيات المستخدمة](#-التقنيات-المستخدمة)
+- [المعمارية البرمجية](#-المعمارية-البرمجية)
+- [هيكل المشروع](#-هيكل-المشروع)
+- [لقطات الواجهة](#-لقطات-الواجهة-ui-showcase)
+- [🎥 العرض المرئي الكامل](#-العرض-المرئي-الكامل)
+- [تسجيل الدخول والمستخدمون](#-تسجيل-الدخول-والمستخدمون)
+- [الأدوار والصلاحيات](#-الأدوار-والصلاحيات)
+- [إدارة التصنيفات](#-إدارة-التصنيفات)
+- [إدارة المنتجات](#-إدارة-المنتجات)
+- [Variants / Sizes](#-variants--sizes)
+- [دورة حياة الطلب](#-دورة-حياة-الطلب)
+- [شاشة POS](#-شاشة-pos)
+- [الخصومات](#-الخصومات)
+- [VAT والضرائب](#-vat-والضرائب)
+- [الدفع](#-الدفع)
+- [الفواتير والطباعة](#-الفواتير-والطباعة)
+- [المرتجعات](#-المرتجعات-refunds)
+- [إدارة الورديات](#-إدارة-الورديات)
+- [Shift Corrections](#-shift-corrections)
+- [المصروفات](#-المصروفات)
+- [Dashboard](#-dashboard)
+- [التقارير](#-التقارير)
+- [PDF والبريد الإلكتروني](#-pdf-والبريد-الإلكتروني)
+- [الإعدادات](#-الإعدادات)
+- [تصميم قاعدة البيانات](#-تصميم-قاعدة-البيانات)
+- [سلامة البيانات والمعاملات](#-سلامة-البيانات-والمعاملات)
+- [ملاحظات تقنية وأمنية](#-ملاحظات-تقنية-وأمنية)
+- [حدود نطاق الإصدار الحالي](#-حدود-نطاق-الإصدار-الحالي)
+- [دورة حياة النظام الكاملة](#-دورة-حياة-النظام-الكاملة)
+
+---
+
+# 🛠️ التقنيات المستخدمة
+
+- **C#**
+- **.NET / Windows Forms**
+- **SQL Server**
+- **ADO.NET / Microsoft.Data.SqlClient**
+- **T-SQL**
+- **3-Tier Architecture**
+- **Object-Oriented Programming (OOP)**
+- **Visual Studio**
+- **Git / GitHub**
+- **Draw.io** لتصميم ERD
+- **iTextSharp** لتوليد PDF
+- **QRCoder** لتوليد QR Code
+- **Brevo API** لإرسال التقارير بالبريد الإلكتروني
+- **Inno Setup** لحزمة التثبيت
+
+---
+
+# 🏗️ المعمارية البرمجية
+
+النظام مبني وفق **3-Tier Architecture**:
+
+```text
+┌───────────────────────────────┐
+│      Presentation Layer       │
+│     Windows Forms / UI        │
+└───────────────┬───────────────┘
+                │
+                ▼
+┌───────────────────────────────┐
+│        Business Layer         │
+│  Business Rules & Calculations│
+└───────────────┬───────────────┘
+                │
+                ▼
+┌───────────────────────────────┐
+│       Data Access Layer       │
+│       SQL / ADO.NET           │
+└───────────────┬───────────────┘
+                │
+                ▼
+┌───────────────────────────────┐
+│          SQL Server           │
+└───────────────────────────────┘
 ```
 
-### دورة البيانات بين الطبقات
+## Presentation Layer
 
+مسؤولة عن:
+
+- Forms وUserControls.
+- إدخال البيانات.
+- عرض البيانات.
+- التنقل بين أجزاء النظام.
+- التحقق الأولي من المدخلات.
+- عرض رسائل النجاح والأخطاء.
+- تطبيق صلاحيات الوصول على الواجهات.
+
+## Business Layer
+
+مسؤولة عن:
+
+- قواعد العمل.
+- حساب الإجماليات.
+- الخصومات.
+- VAT.
+- حالات الطلبات.
+- حالات الورديات.
+- عمليات الدفع.
+- عمليات المرتجعات.
+- حساب Expected Cash / Difference.
+- التحقق من العمليات قبل تنفيذها.
+
+## Data Access Layer
+
+مسؤولة عن:
+
+- الاتصال بـSQL Server.
+- `SELECT / INSERT / UPDATE / DELETE`.
+- `SqlConnection`.
+- `SqlCommand`.
+- `SqlDataReader`.
+- `DataTable`.
+- SQL Parameters.
+- Transactions للعمليات متعددة الخطوات.
+
+---
+
+# 📁 هيكل المشروع
+
+المشروع مقسم إلى ثلاثة أجزاء رئيسية:
+
+```text
+SAWA POS
+│
+├── BusinessLayer
+│   ├── Users
+│   ├── Security
+│   ├── Products
+│   ├── Categories
+│   ├── Orders
+│   ├── Payments
+│   ├── Expenses
+│   ├── Shifts
+│   ├── Shift Corrections
+│   ├── Reports
+│   └── Settings
+│
+├── DataAccessLayer
+│   ├── Users
+│   ├── People
+│   ├── Roles
+│   ├── Products
+│   ├── ProductVariants
+│   ├── Categories
+│   ├── Orders
+│   ├── Payments
+│   ├── Expenses
+│   ├── Shifts
+│   ├── ShiftCorrections
+│   ├── Reports
+│   └── Settings
+│
+└── Resturant & Cafe POS System
+    ├── Login
+    ├── Main Form
+    ├── POS
+    ├── Products
+    ├── Categories
+    ├── Orders
+    ├── Payment
+    ├── Refund
+    ├── Shifts
+    ├── Expenses
+    ├── Users
+    ├── Settings
+    ├── Dashboard
+    └── Reports
 ```
+
+---
+
+# 🖥️ لقطات الواجهة (UI Showcase)
+
+| الشاشة | Preview |
+|---|---|
+| 🏠 Main Dashboard | ![Main Dashboard](Images/Sawa_Screen%20(9).jpg) |
+| 🧾 POS Screen | ![POS Screen](Images/Sawa_Screen%20(10).png) |
+| 🍔 Product Details | ![Product Details](Images/Sawa_Screen%20(11).png) |
+| 📊 Sales Summary | ![Sales Summary](Images/Sawa_Screen%20(32).png) |
+| 📋 Orders Report | ![Orders Report](Images/Sawa_Screen%20(1).png) |
+
+> 📁 يحتوي المشروع على معرض صور إضافي داخل مجلد [`Images`](./Images) لواجهات النظام المختلفة، بما في ذلك المستخدمين والورديات والمصروفات والإعدادات والتقارير.
+
+---
+
+# 🎥 العرض المرئي الكامل
+
+يتوفر تسجيل مرئي يستعرض دورة تشغيل النظام عمليًا، ويغطي:
+
+- 🔐 تسجيل الدخول والصلاحيات.
+- 💵 فتح الوردية والنقد الافتتاحي.
+- 🧾 تنفيذ البيع من شاشة POS.
+- 🍔 اختيار المنتجات والـVariants.
+- 📝 إضافة الملاحظات.
+- 💸 تطبيق الخصومات.
+- 💳 الدفع النقدي والبطاقة والدفع المجزأ.
+- ⏸️ تعليق الطلبات واستكمالها.
+- 💰 تسجيل المصروفات.
+- ↩️ تنفيذ المرتجعات.
+- 🔒 إغلاق الوردية.
+- 👀 Blind Close.
+- 📊 Dashboard.
+- 📈 Reports.
+- 📄 PDF Export.
+
+### ▶️ مشاهدة الفيديو
+
+[🎬 اضغط هنا لمشاهدة العرض المرئي الكامل للنظام على Google Drive](https://drive.google.com/file/d/1bH1sfMtRQG6BdZno-1JVCAXDOcEUlPZo/view?usp=sharing)
+
+---
+
+# 🔐 تسجيل الدخول والمستخدمون
+
+النظام يفصل بين بيانات الشخص وبيانات حساب الدخول:
+
+```text
+Person
+   │
+   ▼
 User
- ↓
-Presentation Layer
- ↓
-Business Layer
- ↓
-Data Access Layer
- ↓
-SQL Server
- ↓
-Business Layer
- ↓
-Presentation Layer
+   │
+   ▼
+Role
 ```
 
-وعلى مستوى الكيانات:
+## People
 
+يحتوي على:
+
+- `PersonID`
+- `FirstName`
+- `LastName`
+- `Phone`
+- `Address`
+
+## Users
+
+يحتوي على:
+
+- `UserID`
+- `PersonID`
+- `RoleID`
+- `Username`
+- `HashedPassword`
+- `IsActive`
+- `Permissions`
+
+---
+
+# 🛡️ الأدوار والصلاحيات
+
+التطبيق الحالي يستخدم دورين أساسيين:
+
+```text
+Admin
+Cashier
 ```
+
+إلى جانب Permissions مخزنة كـBit Flags.
+
+الصلاحيات تشمل:
+
+```text
+Dashboard
+POS
+Orders
+Products
+Categories
+Expenses
+Reports
+Users
+Shifts
+Settings
+```
+
+التدفق:
+
+```text
+User clicks feature
+        │
+        ▼
+Permission Check
+        │
+   ┌────┴────┐
+   │         │
+Allowed    Denied
+   │         │
+   ▼         ▼
+Continue   Message
+```
+
+> ⚠️ جدول `Roles` يسمح نظريًا بأدوار إضافية، لكن منطق التطبيق الحالي مبني على Admin وCashier؛ لذلك لا ينبغي وصف النظام بأنه Role Management ديناميكي كامل.
+
+---
+
+# 🗂️ إدارة التصنيفات
+
+كل منتج يرتبط بتصنيف واحد:
+
+```text
+Category
+   │
+   └── Products
+```
+
+تدعم شاشة Categories:
+
+- إضافة التصنيف.
+- تعديل التصنيف.
+- تفعيل/تعطيل التصنيف.
+- وصف التصنيف.
+- صورة التصنيف.
+- البحث والتصفية.
+
+الحقول:
+
+```text
+CategoryID
+CategoryName
+IsActive
+Description
+CreatedAt
+ImagePath
+```
+
+---
+
+# 🍔 إدارة المنتجات
+
+المنتج هو الوحدة الأساسية في شاشة POS.
+
+```text
 Product
+├── ProductID
+├── CategoryID
+├── ProductName
+├── Description
+├── Price
+├── IsAvailable
+└── ImagePath
+```
+
+الوظائف:
+
+- إضافة منتج.
+- تعديل المنتج.
+- تغيير السعر.
+- تغيير التصنيف.
+- تغيير حالة التوفر.
+- إضافة صورة.
+- البحث.
+- التصفية.
+- تعطيل المنتج دون حذف السجل.
+
+---
+
+# 📏 Variants / Sizes
+
+يدعم النظام **Product Variants / Sizes**.
+
+مثال:
+
+```text
+Burger
+│
+├── Small   → Price A
+├── Medium  → Price B
+└── Large   → Price C
+```
+
+التصميم:
+
+```text
+Products
+    │
+    ▼
+ProductVariants
+    │
+    ▼
+Variants
+```
+
+`ProductVariants` يحدد:
+
+- المنتج.
+- الـVariant.
+- سعر هذا الـVariant لهذا المنتج.
+
+> ⚠️ لا يوجد في الإصدار الحالي كيان مستقل لـAdd-ons مثل `AddOns` أو `OrderItemAddOns`. لذلك الوصف الصحيح للميزة هو **Variants / Sizes** وليس Add-ons.
+
+---
+
+# 🧾 دورة حياة الطلب
+
+```text
+POS
+ │
+ ▼
+Create Order
+ │
+ ├── Product
+ ├── Variant
+ ├── Quantity
+ ├── Notes
+ └── Discount
+ │
+ ▼
+Calculate
+ │
+ ├── SubTotal
+ ├── Discount
+ ├── VAT
+ └── Total
+ │
+ ▼
+Payment
+ │
+ ▼
+Completed
+```
+
+كل طلب مرتبط بـ:
+
+- الوردية.
+- المستخدم.
+- عناصر الطلب.
+- عمليات الدفع.
+
+---
+
+## 🧩 Order Items
+
+الطلب لا يخزن المنتجات داخله مباشرة، وإنما من خلال `OrderItems`.
+
+```text
+Order
+ │
+ └── OrderItems
+       │
+       ├── Product
+       ├── Variant
+       ├── Quantity
+       ├── UnitPrice
+       ├── Discount
+       ├── TotalPrice
+       └── Notes
+```
+
+أهم قرار تصميمي هنا هو **Historical Pricing**.
+
+```text
+Product Price at Sale = 2.000
+           │
+           ▼
+OrderItem.UnitPrice = 2.000
+           │
+           ▼
+Product Price later = 2.500
+
+Old Order still = 2.000
+```
+
+وبذلك لا تتغير الفواتير التاريخية عند تعديل أسعار المنتجات.
+
+---
+
+# ⏸️ الطلبات المعلقة
+
+يمكن أن يبقى الطلب في حالة Pending قبل إتمام الدفع.
+
+```text
+Create Order
+     ↓
+Add Items
+     ↓
+Pending
+     ↓
+Orders Screen
+     ↓
+Resume
+     ↓
+Payment
+     ↓
+Completed
+```
+
+وهذا يسمح للكاشير بالتعامل مع أكثر من عميل دون فقدان الطلب الحالي.
+
+---
+
+# 🧮 شاشة POS
+
+شاشة POS هي الواجهة التشغيلية الأساسية للكاشير.
+
+تجمع:
+
+- Categories.
+- Products.
+- Variants.
+- Quantity.
+- Notes.
+- Discounts.
+- SubTotal.
+- VAT.
+- Total.
+- Payment.
+
+التدفق:
+
+```text
+Category
+   ↓
+Product
+   ↓
+Variant
+   ↓
+Quantity
+   ↓
+Notes
+   ↓
+Discount
+   ↓
+Totals
+   ↓
+Payment
+```
+
+---
+
+# 💸 الخصومات
+
+يدعم النظام:
+
+- خصم على مستوى Order.
+- خصم على مستوى OrderItem.
+- Max Discount Percentage.
+- Enable/Disable Discount.
+
+```text
+Original Price
+      ↓
+Discount
+      ↓
+Discounted Value
+      ↓
+Tax Calculation
+      ↓
+Final Total
+```
+
+---
+
+# 🧮 VAT والضرائب
+
+يمكن تفعيل أو تعطيل VAT من الإعدادات.
+
+يحتفظ الطلب نفسه بمعلومات الضريبة الخاصة به:
+
+```text
+VATPercentage
+TaxNumber
+IsTaxInclusive
+```
+
+## Inclusive
+
+السعر يتضمن الضريبة.
+
+```text
+Gross
  ↓
-OrderItem
+Extract VAT
  ↓
+Net
+```
+
+الحساب المفاهيمي:
+
+```text
+VAT = Total - (Total / (1 + VAT%))
+```
+
+## Exclusive
+
+السعر لا يتضمن الضريبة.
+
+```text
+Net
+ ↓
+VAT
+ ↓
+Net + VAT
+```
+
+إعدادات VAT تشمل:
+
+- `VAT`
+- `VatEnable`
+- `TaxMethod`
+- `TaxNumber`
+- `IsTaxInclusive`
+- `DecimalPlaces`
+
+---
+
+# 💳 الدفع
+
+وسائل الدفع الفعلية في التطبيق:
+
+```text
+Cash = 1
+Visa/Card = 2
+```
+
+## Cash
+
+```text
+Total
+ ↓
+Paid Amount
+ ↓
+Change
+```
+
+## Card
+
+```text
+Total
+ ↓
+Card Payment
+```
+
+## Split Payment
+
+يمكن تقسيم المبلغ:
+
+```text
+Order Total = 10.000
+
+Cash = 4.000
+Card = 6.000
+
+4 + 6 = 10
+```
+
+وتسجل كل وسيلة دفع كسجل مستقل في `Payments`.
+
+---
+
+# 🖨️ الفواتير والطباعة
+
+بعد نجاح الدفع:
+
+```text
 Order
  ↓
 Payment
  ↓
-Shift
+Completed
  ↓
-Reports
- ↓
-Dashboard
+Receipt
 ```
 
-### الترابط بين POS والوردية والتقارير
+يدعم النظام إعدادات:
 
+- Restaurant Name.
+- Logo.
+- Phone.
+- Address.
+- Currency.
+- Decimal Places.
+- Tax Number.
+- Printer Name.
+- Auto Print.
+- QR Code.
+
+ويحتوي المشروع على منطق طباعة وفاتورة يعتمد على إعدادات المنشأة.
+
+---
+
+# ↩️ المرتجعات (Refunds)
+
+المرتجع لا يحذف الطلب الأصلي.
+
+بدلًا من ذلك:
+
+```text
+Original Order
+      │
+      ▼
+Refund Order
+      │
+      ▼
+RefundTracking
 ```
+
+يحفظ `RefundTracking`:
+
+- `TrackingID`
+- `RefundOrderID`
+- `OriginalOrderID`
+- `RefundReason`
+- `RefundDate`
+
+## Partial Refund
+
+مثال:
+
+```text
+Original:
+Burger × 2
+Fries  × 1
+
+Refund:
+Burger × 1
+```
+
+يحاول منطق النظام منع إرجاع كمية تتجاوز الكمية المتاحة للإرجاع.
+
+## Full Refund
+
+يمكن إرجاع الطلب كاملًا عندما تكون الكمية والقيمة مؤهلة لذلك.
+
+## الأثر المالي
+
+يتم تمثيل المرتجع كعملية مالية سالبة في النموذج المستخدم في التطبيق:
+
+```text
+Refund Order
+   ↓
+Negative Order Values
+   ↓
+Negative Payment
+```
+
+وبذلك يمكن للتقارير حساب الأثر الصافي للمرتجعات.
+
+---
+
+# 🕒 إدارة الورديات
+
+الوردية هي محور الرقابة النقدية.
+
+```text
 Open Shift
-     ↓
-POS enabled
-     ↓
+    ↓
 Orders
-     ↓
+    ↓
 Payments
-     ↓
-Shift totals
-     ↓
+    ↓
+Expenses
+    ↓
+Refunds
+    ↓
 Close Shift
 ```
 
-```
-POS
- ↓
-Order
- ↓
-Payment
- ↓
-Database
- ↓
-Sales Report
- ↓
-Dashboard
+بيانات الوردية:
+
+```text
+ShiftID
+OpenedByUser
+OpenedAt
+ClosedAt
+OpeningCash
+Status
+ExpectedCash
+ActualCash
+Difference
+Notes
 ```
 
-هذا الترابط يمنع التعامل مع أي عملية بيع كعملية معزولة عن الصندوق أو عن التحليل اللاحق لها، ويجعل كل حركة — بيع، استرجاع، أو مصروف — قابلة للربط المباشر بالمستخدم الذي نفّذها والوردية التي حدثت خلالها.
+---
+
+# 💰 حساب Expected Cash
+
+الصيغة التنفيذية الأدق تعتمد على مدفوعات النقد الفعلية:
+
+```text
+Expected Cash
+=
+Opening Cash
++
+Cash Payment Amounts
+-
+Cash Expenses
+```
+
+وبما أن المرتجعات النقدية تسجل كقيم سالبة في النموذج المالي، فهي تؤثر تلقائيًا على صافي النقد.
+
+---
+
+# 🔒 إغلاق الوردية
+
+عند الإغلاق:
+
+```text
+Expected Cash
+      │
+      ▼
+Actual Cash
+      │
+      ▼
+Difference
+```
+
+الحساب:
+
+```text
+Difference = Actual Cash - Expected Cash
+```
+
+النتائج:
+
+```text
+0     → No Difference
+< 0   → Shortage
+> 0   → Overage
+```
+
+---
+
+# 👀 Blind Close
+
+يوجد إعداد:
+
+```text
+EnableBlindClose
+```
+
+عند تفعيله يمكن للكاشير إدخال `ActualCash` دون عرض `ExpectedCash` له مسبقًا.
+
+---
+
+# 🛠️ Shift Corrections
+
+يوجد كيان مستقل لتصحيحات الوردية:
+
+```text
+ShiftCorrections
+```
+
+ويخزن:
+
+- القيمة القديمة.
+- القيمة الجديدة.
+- نوع التصحيح.
+- السبب.
+- المستخدم.
+- التاريخ.
+
+ويستخدم لتصحيحات مثل:
+
+```text
+Opening Cash Correction
+Actual Cash Correction
+```
+
+> ملاحظة: هذا ليس نظام Audit Log عامًا؛ هو سجل تصحيحات مالي متخصص بالوردية.
+
+---
+
+# 💵 المصروفات
+
+المصروف مرتبط بالمستخدم والوردية:
+
+```text
+User
+  │
+  ▼
+Expense
+  │
+  ▼
+Shift
+```
+
+بيانات المصروف:
+
+```text
+ExpenseID
+CreatedByUserID
+ShiftID
+Amount
+Reason
+CreatedAt
+PaymentSource
+Description
+StatusExpense
+```
+
+المصروف النقدي يؤثر على Expected Cash.
+
+---
+
+# 📊 Dashboard
+
+لوحة التحكم تجمع المؤشرات التشغيلية والمالية:
+
+```text
+Dashboard
+│
+├── KPIs
+├── Current Shift
+├── Alerts
+├── Hourly Sales
+├── Category Sales
+├── Top Products
+└── Quick Actions
+```
+
+وتتضمن مؤشرات مثل:
+
+- Gross Sales.
+- Net Sales.
+- Total Orders.
+- Average Order Value.
+- Refunds.
+- Discounts.
+- VAT.
+- Cash Collected.
+- Card Collected.
+- Shift Information.
+
+---
+
+# 📈 التقارير
+
+يحتوي النظام على تقارير متخصصة، منها:
+
+### 🧾 Sales Analysis
+
+تحليل المبيعات.
+
+### 📊 Sales Summary
+
+ملخص المبيعات.
+
+### 📋 Orders Report
+
+تحليل الطلبات حسب التاريخ والحالة والمستخدم والوردية والقيمة.
+
+### 💳 Payment Report
+
+تحليل المدفوعات حسب Cash/Card.
+
+### 💵 Expense Report
+
+تحليل المصروفات.
+
+### ↩️ Refund Report
+
+تحليل عمليات المرتجعات.
+
+### 🕒 Shift Report
+
+تحليل الورديات والنقد المتوقع والفعلي والفروقات.
+
+---
+
+# 📄 PDF والبريد الإلكتروني
+
+يدعم النظام تصدير التقارير إلى PDF باستخدام iTextSharp.
+
+كما توجد شاشة لإرسال التقرير بالبريد الإلكتروني، ويستخدم النظام Brevo API.
+
+```text
+Report
+  ↓
+Generate
+  ↓
+PDF
+  ↓
+Email
+  ↓
+Brevo
+```
+
+---
+
+# ⚙️ الإعدادات
+
+`SystemSettings` هو مركز إعدادات المنشأة.
+
+## معلومات المنشأة
+
+- Restaurant Name.
+- Logo.
+- Phone.
+- Address.
+- Email.
+- CR Number.
+- Tax Number.
+
+## المالية والضريبة
+
+- Currency.
+- VAT.
+- VAT Enable.
+- Tax Method.
+- Decimal Places.
+- Max Discount.
+
+## الطباعة
+
+- Printer Name.
+- Auto Print Receipt.
+- Show QR Code.
+
+## التشغيل
+
+- Blind Close.
+- Enable Discount.
+- Language.
+
+## البريد
+
+- Sender Email.
+- Encrypted Brevo Key.
+
+---
+
+# 🗄️ تصميم قاعدة البيانات
+
+قاعدة البيانات الحالية تتكون من الكيانات الرئيسية التالية:
+
+```text
+People
+Users
+Roles
+
+Categories
+Products
+Variants
+ProductVariants
+
+Shifts
+ShiftCorrections
+Expenses
+
+Orders
+OrderItems
+Payments
+RefundTracking
+
+SystemSettings
+```
+
+العلاقات الرئيسية:
+
+```text
+People
+   │
+   └── Users
+          │
+          ├── Roles
+          ├── Shifts
+          ├── Orders
+          ├── Expenses
+          └── ShiftCorrections
+
+Categories
+   │
+   └── Products
+          │
+          └── ProductVariants
+                  │
+                  └── Variants
+
+Shifts
+   ├── Orders
+   ├── Expenses
+   └── ShiftCorrections
+
+Orders
+   ├── OrderItems
+   └── Payments
+
+RefundTracking
+   └── Original Order ↔ Refund Order
+```
+
+📚 **وثيقة تصميم قاعدة البيانات التفصيلية:**  
+[SAWA POS Database Design](./DATABASE_DESIGN.md)
+
+---
+
+# 🔗 ERD
+
+تم تصميم قاعدة البيانات باستخدام نموذج علائقي، ويمكن الاحتفاظ بملف ERD عالي الدقة داخل المستودع.
+
+![SAWA POS Database Schema](SawaPOS_Schema.drawio.png)
+
+📥 [عرض ملف ERD بصيغة PDF](SawaPOS_Schema.drawio.pdf)
+
+🔗 [مستودع تصميم قاعدة البيانات](https://github.com/zuhairSh/SAWA-POS-Database-Design)
+
+---
+
+# 🔄 سلامة البيانات والمعاملات
+
+من أهم خصائص التصميم:
+
+- SQL Parameters.
+- Transactions للعمليات المالية المركبة.
+- Historical Pricing.
+- Foreign Key Relationships.
+- Business Validation.
+- ربط الطلب بالمستخدم والوردية.
+- ربط المصروف بالوردية والمستخدم.
+- ربط الدفع بالطلب.
+- منع بعض العمليات بناءً على حالة الوردية.
+
+## Transaction Pattern
+
+```text
+BEGIN TRANSACTION
+       │
+       ├── Operation 1
+       ├── Operation 2
+       ├── Operation 3
+       │
+       ▼
+    COMMIT
+```
+
+وفي حالة الفشل:
+
+```text
+Failure
+   ↓
+ROLLBACK
+```
+
+يستخدم هذا النمط في العمليات التي تحتاج نجاحًا ذريًا عبر أكثر من جدول، مثل إنشاء الطلب مع عناصره، الدفع، والمرتجعات.
+
+---
+
+# 🧯 معالجة الأخطاء
+
+تستخدم طبقة الوصول إلى البيانات نمط `try/catch` لمعالجة أخطاء الاتصال وتنفيذ الاستعلامات.
+
+كما توجد آلية مركزية لمعالجة أخطاء قاعدة البيانات بدل ترك الاستثناءات تتسبب في انهيار غير متحكم به للواجهة.
+
+---
+
+# 🔐 ملاحظات تقنية وأمنية
+
+## كلمات المرور
+
+يتم تخزين كلمة المرور بصيغة Hash بدل Plain Text.
+
+التنفيذ الحالي يعتمد على SHA-256. وللأنظمة الإنتاجية الحديثة يفضل استخدام Password KDF مخصص مثل:
+
+- Argon2
+- bcrypt
+- PBKDF2
+- scrypt
+
+مع Salt مناسب.
+
+## Remember Me
+
+يستخدم التطبيق Windows DPAPI لحماية بيانات الاعتماد المحلية المرتبطة بالمستخدم.
+
+## Connection String
+
+يجب عدم وضع بيانات اعتماد SQL Server الحقيقية داخل Repository عام.
+
+الأفضل استخدام:
+
+```text
+Environment Variables
+User Secrets
+Secure Secret Store
+Encrypted Configuration
+```
+
+## Brevo API Key
+
+يجب أيضًا حماية مفاتيح API وعدم نشر أسرار الإنتاج داخل Git.
+
+---
+
+# ⚠️ نقاط يجب معرفتها عن Schema الحالي
+
+هناك بعض العلاقات التي يستخدمها التطبيق منطقيًا ولكنها ليست كلها ممثلة كـForeign Keys في قائمة القيود المقدمة.
+
+أهم الأمثلة:
+
+```text
+Payments.OrderID
+Payments.ShiftID
+
+RefundTracking.RefundOrderID
+RefundTracking.OriginalOrderID
+
+OrderItems.VariantID
+```
+
+لذلك يوصى بمراجعة هذه القيود في SQL Server لضمان أن سلامة البيانات لا تعتمد على Business Layer وحدها.
+
+---
+
+# 🚫 حدود نطاق الإصدار الحالي
+
+للدقة، الإصدار الحالي لا ينبغي وصفه على أنه:
+
+- Inventory Management System.
+- Purchasing System.
+- Supplier Management System.
+- Stock Movement System.
+- Add-on Management System.
+
+لا توجد في الـSchema والكود المقدم كيانات مستقلة لـ:
+
+```text
+Inventory
+Purchases
+PurchaseItems
+Suppliers
+StockMovements
+AddOns
+OrderItemAddOns
+```
+
+أما **Variants/Sizes** فهي موجودة فعليًا ومتكاملة مع المنتجات.
+
+---
+
+# 🧭 دورة حياة النظام الكاملة
+
+```text
+                    ┌──────────────┐
+                    │    Login     │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │  Main Form   │
+                    └──────┬───────┘
+                           │
+          ┌────────────────┼────────────────┐
+          │                │                │
+          ▼                ▼                ▼
+      Products          Users           Settings
+          │
+          └────────────────┐
+                           ▼
+                    ┌──────────────┐
+                    │  Open Shift  │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │     POS      │
+                    └──────┬───────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │    Order     │
+                    └──────┬───────┘
+                           │
+                    ┌──────┴───────┐
+                    │              │
+                 Pending        Payment
+                    │              │
+                    │       ┌──────┼──────┐
+                    │       │      │      │
+                    │      Cash   Card  Split
+                    │       │      │      │
+                    └───────┴──────┴──────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │  Completed   │
+                    └──────┬───────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+              ▼            ▼            ▼
+           Receipt      Dashboard     Reports
+              │
+              ▼
+           Possible
+            Refund
+              │
+              ▼
+        ┌───────────────┐
+        │ Shift Closing │
+        └───────┬───────┘
+                │
+        ┌───────┼────────┐
+        │       │        │
+        ▼       ▼        ▼
+     Expected Actual  Difference
+       Cash    Cash
+```
+
+---
+
+# 💡 الخلاصة
+
+SAWA POS هو نظام POS مكتمل نسبيًا من ناحية دورة التشغيل اليومية للمطاعم والمقاهي، ويجمع بين:
+
+```text
+👤 Users
+🔐 Permissions
+🗂️ Categories
+🍔 Products
+📏 Variants
+🧾 Orders
+💳 Payments
+↩️ Refunds
+🕒 Shifts
+💵 Expenses
+📊 Dashboard
+📈 Reports
+🖨️ Printing
+🧮 VAT
+📄 PDF
+📧 Email
+⚙️ Settings
+```
+
+القيمة الأساسية في التصميم هي أن عملية البيع ليست معزولة، بل مرتبطة بالمستخدم والوردية والطلب والدفع والتقارير، مع وجود Transactional Operations للعمليات المالية المركبة وحفظ السعر التاريخي للطلبات.
+
+> **نسخة هذا README مصاغة لتصف التنفيذ الفعلي للنظام بدل توسيع نطاقه بميزات غير موجودة في الكود/Schema الحالي.**
