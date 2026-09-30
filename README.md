@@ -15,7 +15,7 @@
 5. [تسجيل الدخول والمستخدمون](#تسجيل-الدخول-والمستخدمون)
 6. [الأدوار والصلاحيات (Roles & Permissions)](#الأدوار-والصلاحيات-roles--permissions)
 7. [إدارة الفئات والمنتجات](#إدارة-الفئات-والمنتجات)
-8. [الأحجام (Variants/Sizes) والإضافات (Add-ons)](#الأحجام-variantssizes-والإضافات-add-ons)
+8. [الأحجام (Variants/Sizes)](#الأحجام-variantssizes)
 9. [دورة حياة الطلب (Order Lifecycle)](#دورة-حياة-الطلب-order-lifecycle)
 10. [شاشة نقاط البيع (POS)](#شاشة-نقاط-البيع-pos)
 11. [الدفع (Payment)](#الدفع-payment)
@@ -222,7 +222,7 @@ Category
 
 ---
 
-## الأحجام (Variants/Sizes) والإضافات (Add-ons)
+## الأحجام (Variants/Sizes)
 
 ### الأحجام
 
@@ -242,21 +242,6 @@ Sizes
       Product
 ```
 
-### الإضافات (Add-ons)
-
-الإضافة (مثل جبنة إضافية، صوص إضافي) لها تعريف مستقل، وعلاقة منفصلة تحدد أي الإضافات متاحة لأي منتج:
-
-```
-Addons
-   │
-   └── ProductAddons
-             │
-             ↓
-         Products
-```
-
-هذا التصميم العلائقي يتجنب استخدام أعمدة ثابتة (`Addon1`, `Addon2`, ...) داخل جدول المنتجات، لأن عدد الإضافات المتاحة لكل منتج ليس ثابتًا.
-
 ---
 
 ## دورة حياة الطلب (Order Lifecycle)
@@ -271,7 +256,6 @@ Create Order
  │
  ├── Add Product
  ├── Select Variant
- ├── Select Add-ons
  ├── Quantity
  ├── Discount
  └── Notes
