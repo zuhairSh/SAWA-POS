@@ -1151,9 +1151,9 @@ RefundTracking
 
 تم تصميم قاعدة البيانات باستخدام نموذج علائقي، ويمكن الاحتفاظ بملف ERD عالي الدقة داخل المستودع.
 
-![SAWA POS Database Schema](SawaPOS_Schema.drawio.png)
+![SAWA POS Database Schema](SawaPOS_Schema.png)
 
-📥 [عرض ملف ERD بصيغة PDF](SawaPOS_Schema.pdf)
+📥 [عرض ملف ERD بصيغة PDF](SawaPOS_Schema.drawio.pdf)
 
 🔗 [مستودع تصميم قاعدة البيانات](https://github.com/zuhairSh/SAWA-POS-Database-Design)
 
@@ -1203,91 +1203,6 @@ ROLLBACK
 تستخدم طبقة الوصول إلى البيانات نمط `try/catch` لمعالجة أخطاء الاتصال وتنفيذ الاستعلامات.
 
 كما توجد آلية مركزية لمعالجة أخطاء قاعدة البيانات بدل ترك الاستثناءات تتسبب في انهيار غير متحكم به للواجهة.
-
----
-
-# 🔐 ملاحظات تقنية وأمنية
-
-## كلمات المرور
-
-يتم تخزين كلمة المرور بصيغة Hash بدل Plain Text.
-
-التنفيذ الحالي يعتمد على SHA-256. وللأنظمة الإنتاجية الحديثة يفضل استخدام Password KDF مخصص مثل:
-
-- Argon2
-- bcrypt
-- PBKDF2
-- scrypt
-
-مع Salt مناسب.
-
-## Remember Me
-
-يستخدم التطبيق Windows DPAPI لحماية بيانات الاعتماد المحلية المرتبطة بالمستخدم.
-
-## Connection String
-
-يجب عدم وضع بيانات اعتماد SQL Server الحقيقية داخل Repository عام.
-
-الأفضل استخدام:
-
-```text
-Environment Variables
-User Secrets
-Secure Secret Store
-Encrypted Configuration
-```
-
-## Brevo API Key
-
-يجب أيضًا حماية مفاتيح API وعدم نشر أسرار الإنتاج داخل Git.
-
----
-
-# ⚠️ نقاط يجب معرفتها عن Schema الحالي
-
-هناك بعض العلاقات التي يستخدمها التطبيق منطقيًا ولكنها ليست كلها ممثلة كـForeign Keys في قائمة القيود المقدمة.
-
-أهم الأمثلة:
-
-```text
-Payments.OrderID
-Payments.ShiftID
-
-RefundTracking.RefundOrderID
-RefundTracking.OriginalOrderID
-
-OrderItems.VariantID
-```
-
-لذلك يوصى بمراجعة هذه القيود في SQL Server لضمان أن سلامة البيانات لا تعتمد على Business Layer وحدها.
-
----
-
-# 🚫 حدود نطاق الإصدار الحالي
-
-للدقة، الإصدار الحالي لا ينبغي وصفه على أنه:
-
-- Inventory Management System.
-- Purchasing System.
-- Supplier Management System.
-- Stock Movement System.
-- Add-on Management System.
-
-لا توجد في الـSchema والكود المقدم كيانات مستقلة لـ:
-
-```text
-Inventory
-Purchases
-PurchaseItems
-Suppliers
-StockMovements
-AddOns
-OrderItemAddOns
-```
-
-أما **Variants/Sizes** فهي موجودة فعليًا ومتكاملة مع المنتجات.
-
 ---
 
 # 🧭 دورة حياة النظام الكاملة
@@ -1363,7 +1278,8 @@ OrderItemAddOns
 
 # 💡 الخلاصة
 
-SAWA POS هو نظام POS مكتمل نسبيًا من ناحية دورة التشغيل اليومية للمطاعم والمقاهي، ويجمع بين:
+SAWA POS
+هو نظام POS مكتمل في دورة التشغيل اليومية للمطاعم والمقاهي، ويجمع بين:
 
 ```text
 👤 Users
@@ -1385,5 +1301,4 @@ SAWA POS هو نظام POS مكتمل نسبيًا من ناحية دورة ال
 ⚙️ Settings
 ```
 
-القيمة الأساسية في التصميم هي أن عملية البيع ليست معزولة، بل مرتبطة بالمستخدم والوردية والطلب والدفع والتقارير، مع وجود Transactional Operations للعمليات المالية المركبة وحفظ السعر التاريخي للطلبات.
-
+و الحمد لله رب العالمين.
