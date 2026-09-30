@@ -1146,10 +1146,6 @@ RefundTracking
    └── Original Order ↔ Refund Order
 ```
 
-📚 **وثيقة تصميم قاعدة البيانات التفصيلية:**  
-[SAWA POS Database Design](./DATABASE_DESIGN.md)
-
----
 
 # 🔗 ERD
 
