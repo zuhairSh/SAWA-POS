@@ -104,15 +104,15 @@ Data Access Layer
 
 ## لقطات من الواجهة (UI Showcase)
 
-| الشاشة | الوصف |
+| الشاشة | الواجهة |
 |---|---|
-| الشاشة الرئيسية ولوحة التحكم | ![Main Dashboard](1000034338.jpg) |
-| شاشة نقاط البيع | ![POS Screen](1000033692.png) |
-| تخصيص تفاصيل المنتج | ![Product Details Customization](1000033660.png) |
-| ملخص المبيعات | ![Sales Summary](1000033683.png) |
-| تقرير الطلبات | ![Orders Report](1000033658.png) |
+| الشاشة الرئيسية ولوحة التحكم (Dashboard) | ![Main Dashboard](images/Sawa_Screen%20(9).jpg) |
+| شاشة نقاط البيع (POS Screen) | ![POS Screen](images/Sawa_Screen%20(10).png) |
+| تخصيص تفاصيل المنتج (Product Details) | ![Product Details Customization](images/Sawa_Screen%20(11).png) |
+| ملخص المبيعات (Sales Summary) | ![Sales Summary](images/Sawa_Screen%20(32).png) |
+| تقرير الطلبات (Orders Report) | ![Orders Report](images/Sawa_Screen%20(1).png) |
 
----
+> 📁 **ملاحظة:** للاطلاع على المعرض الكامل لكافة واجهات وشاشات النظام (إدارة الورديات، المستخدمين، المصروفات، والإعدادات)، يمكنك تصفح مجلد الصور مباشرة: [`/images`](./images).
 
 ## شرح مرئي كامل للنظام
 
