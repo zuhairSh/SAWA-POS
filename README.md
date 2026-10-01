@@ -311,7 +311,6 @@ Allowed    Denied
 Continue   Message
 ```
 
-> ⚠️ جدول `Roles` يسمح نظريًا بأدوار إضافية، لكن منطق التطبيق الحالي مبني على Admin وCashier؛ لذلك لا ينبغي وصف النظام بأنه Role Management ديناميكي كامل.
 
 ---
 
@@ -382,7 +381,6 @@ Variants
 
 `ProductVariants` يحدد المنتج والـVariant وسعر هذا الـVariant لهذا المنتج.
 
-> ⚠️ لا يوجد في الإصدار الحالي كيان مستقل لـAdd-ons؛ لذلك الوصف الصحيح للميزة هو **Variants / Sizes** وليس Add-ons.
 
 ---
 
